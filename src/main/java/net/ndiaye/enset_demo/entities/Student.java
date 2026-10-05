@@ -1,13 +1,13 @@
 package net.ndiaye.enset_demo.entities;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @NoArgsConstructor @AllArgsConstructor @Getter @Setter @Builder
 public class Student {
+    @Id
     private String id;
     private String firstName;
     private String lastName;
