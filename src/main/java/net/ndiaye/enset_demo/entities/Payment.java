@@ -13,7 +13,7 @@ public class Payment {
     private String id;
     private LocalDate date;
     private double amount;
-    private paymentType type;
+    private PaymentType type;
     private PaymentStatus status;
     private String file;
 

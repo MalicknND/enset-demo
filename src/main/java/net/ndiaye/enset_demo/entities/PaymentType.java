@@ -1,6 +1,6 @@
 package net.ndiaye.enset_demo.entities;
 
-public enum paymentType {
+public enum PaymentType {
     CASH,
     CHECK,
     TRANSFER,
