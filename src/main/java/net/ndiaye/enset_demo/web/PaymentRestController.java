@@ -6,17 +6,22 @@ import net.ndiaye.enset_demo.entities.PaymentType;
 import net.ndiaye.enset_demo.entities.Student;
 import net.ndiaye.enset_demo.repository.PaymentRepository;
 import net.ndiaye.enset_demo.repository.StudentRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class PaymentRestController {
-    private PaymentRepository paymentRepository;
-    private StudentRepository studentRepository;
+    private final PaymentRepository paymentRepository;
+    private final StudentRepository studentRepository;
 
     public PaymentRestController(StudentRepository studentRepository, PaymentRepository paymentRepository) {
         this.studentRepository = studentRepository;
@@ -34,12 +39,12 @@ public class PaymentRestController {
     }
 
     @GetMapping("/payments/byStatus")
-    public List<Payment> paymentsByStatus(@PathVariable PaymentStatus status){
+    public List<Payment> paymentsByStatus(@RequestParam PaymentStatus status){
         return paymentRepository.findByStatus(status);
     }
 
     @GetMapping("/payments/byType")
-    public List<Payment> paymentsType(@PathVariable PaymentType type){
+    public List<Payment> paymentsType(@RequestParam PaymentType type){
         return paymentRepository.findByType(type);
     }
 
@@ -61,5 +66,33 @@ public class PaymentRestController {
     @GetMapping("/studentsByProgram")
     public List<Student> getStudentsByProgramId(@RequestParam String programId) {
         return studentRepository.findByProgramId(programId);
+    }
+
+
+    @PutMapping("/payments/{id}/status")
+    public Payment updatePaymentStatus(@PathVariable Long id, @RequestParam PaymentStatus status) {
+        Payment payment = paymentRepository.findById(id).get();
+        payment.setStatus(status);
+        return paymentRepository.save(payment);
+    }
+
+    @PostMapping(path = "/payments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Payment savePayment(@RequestParam MultipartFile file, LocalDate date, double amount, PaymentType type, String studentCode) throws IOException {
+        Path folderPath = Paths.get(System.getProperty("user.home"), "enset-data", "payments");
+        if (!Files.exists(folderPath)) {
+            Files.createDirectories(folderPath);
+        }
+        String fileName = UUID.randomUUID().toString();
+        Path filePath = Paths.get(System.getProperty("user.home"), "enset-data", "payments", fileName + ".pdf");
+        Files.copy(file.getInputStream(), filePath);
+        Payment payment = Payment.builder()
+                .date(date)
+                .type(type)
+                .student(studentRepository.findByCode(studentCode))
+                .amount(amount)
+                .file(filePath.toUri().toString())
+                .status(PaymentStatus.CREATED)
+                .build();
+        return paymentRepository.save(payment);
     }
 }
