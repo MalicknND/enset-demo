@@ -24,52 +24,62 @@ public class PaymentRestController {
     private final PaymentRepository paymentRepository;
     private final StudentRepository studentRepository;
 
+    // on utilise ici
     public PaymentRestController(StudentRepository studentRepository, PaymentRepository paymentRepository) {
         this.studentRepository = studentRepository;
         this.paymentRepository = paymentRepository;
     }
 
+    // Methode qui permet de consulter tous les paiements
     @GetMapping("/payments")
     public List<Payment> allPayments() {
         return paymentRepository.findAll();
     }
 
+    // Methode qui permet de consulter tous les paiements d'un etudiant
     @GetMapping("/students/{code}/payments")
     public List<Payment> paymentsByStudent(@PathVariable String code){
         return paymentRepository.findByStudentCode(code);
     }
 
+    // Methode qui permet de consulter tous les paiements d'un etudiant par status
     @GetMapping("/payments/byStatus")
     public List<Payment> paymentsByStatus(@RequestParam PaymentStatus status){
         return paymentRepository.findByStatus(status);
     }
 
+    // Methode qui permet de consulter tous les paiements d'un etudiant par type
     @GetMapping("/payments/byType")
     public List<Payment> paymentsType(@RequestParam PaymentType type){
         return paymentRepository.findByType(type);
     }
 
+    // Methode qui permet de consulter un paiement par son id
     @GetMapping("/payments/{id}")
     public Payment getPaymentById(@PathVariable Long id) {
         return paymentRepository.findById(id).get();
     }
 
+    // Methode qui permet de consulter tous les etudiants
     @GetMapping("/students")
     public List<Student> allStudents() {
         return studentRepository.findAll();
     }
 
+    // Methode qui permet de consulter un etudiant par son code
     @GetMapping("/students/{code}")
     public Student getStudentByCode(@PathVariable String code) {
         return studentRepository.findByCode(code);
     }
 
+    // Methode qui permet de consulter tous les etudiants d'un programme
     @GetMapping("/studentsByProgram")
     public List<Student> getStudentsByProgramId(@RequestParam String programId) {
         return studentRepository.findByProgramId(programId);
     }
 
 
+    // Methode qui permet de mettre à jour le status d'un paiement
     @PutMapping("/payments/{id}/status")
     public Payment updatePaymentStatus(@PathVariable Long id, @RequestParam PaymentStatus status) {
         Payment payment = paymentRepository.findById(id).get();
@@ -77,6 +87,7 @@ public class PaymentRestController {
         return paymentRepository.save(payment);
     }
 
+    // Methode qui permet de sauvegarder un paiement avec un fichier PDF
     @PostMapping(path = "/payments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Payment savePayment(@RequestParam MultipartFile file, LocalDate date, double amount, PaymentType type, String studentCode) throws IOException {
         Path folderPath = Paths.get(System.getProperty("user.home"), "enset-data", "payments");
